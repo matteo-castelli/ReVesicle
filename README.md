@@ -62,6 +62,17 @@ All input file paths must be provided as absolute paths.
 
 ## Repository structure
 ```
+ReVesicle/
+├── ReVesicle.sh
+├── script/
+├── CHARMM36m/
+├── VMD_functions/
+└── (run directories will be created here)
+```
+
+Description:
+
+```
 script/
 ```
 Contains all VMD Tcl scripts, NAMD .conf files, and helper utilities required by the workflow.
@@ -70,23 +81,18 @@ These files are copied automatically into the appropriate STEP folders at runtim
 ```
 CHARMM36m/
 ```
-⚠️ Required
-
-Must be located at the top level of the repository.
-
+Must be located at the top level of the repository. ⚠️ Required
 This directory should contain the CHARMM36m force field files referenced by the NAMD configuration files (e.g. parameter and topology files).
 The protocol assumes relative paths to this directory inside the .conf files.
 
 ```
-ReVesicle/
-├── ReVesicle.sh
-├── script/
-├── CHARMM36m/
-└── (run directories will be created here)
+VMD_functions/
 ```
+VMD Tcl helper functions used to define and visualize two concentric spheres
+around mesoscale membranes for identifying infiltrated water and flipped
+lipids during system cleanup (STEP 1 / STEP 4).
 
 When running the full protocol (-run_steps all), the following directory tree is created:
-
 ```
 STEP-1-3_A/
 ├── STEP-1_A/
@@ -130,20 +136,6 @@ Run without arguments to display help:
 ```
 
 This runs the full ReVesicle protocol (STEP-1 through STEP-5).
-
----
-
-## Trajectory stripping
-
-When `-striptraj yes` is enabled, ReVesicle runs step-specific Tcl scripts to generate solvent-free trajectories in:
-
-* `STEP-2_A`
-* `STEP-3_A`
-* `STEP-2_B`
-* `STEP-3_B`
-* `STEP-5`
-
-These scripts remove water and ions while preserving lipid and protein coordinates, producing lighter trajectories for analysis and visualization.
 
 ---
 
