@@ -26,6 +26,7 @@ The protocol combines selective removal of infiltrated species, short non-equili
 ---
 
 ## Usage:
+```
   ./ReVesicle.sh [OPTIONS]
 
 Required arguments:
@@ -53,7 +54,7 @@ Optional arguments:
                      5     : run STEP-5 only
 
   -h, --help         Show this help message and exit
-
+```
 ⚠️ Important
 All input file paths must be provided as absolute paths.
 
