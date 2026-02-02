@@ -70,7 +70,7 @@ ReVesicle/
 └── (run directories will be created here)
 ```
 
-Description:
+**Description**:
 
 ```
 script/
@@ -89,8 +89,10 @@ The protocol assumes relative paths to this directory inside the .conf files.
 VMD_functions/
 ```
 VMD Tcl helper functions used to define and visualize two concentric spheres
-around mesoscale membranes for identifying infiltrated water and flipped
-lipids during system cleanup (STEP 1 / STEP 4).
+around a simulated vesicle (pre-loaded in VMD). These functions are designed
+to help users determine the geometric parameters d1 and d2 required to
+identify infiltrated water molecules during STEP 1 and/or STEP 4, as well as
+d3 and d4 required to identify flipped lipid species.
 
 When running the full protocol (-run_steps all), the following directory tree is created:
 ```
