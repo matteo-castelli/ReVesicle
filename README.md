@@ -61,38 +61,48 @@ All input file paths must be provided as absolute paths.
 ---
 
 ## Repository structure
-
+```
 script/
+```
 Contains all VMD Tcl scripts, NAMD .conf files, and helper utilities required by the workflow.
 These files are copied automatically into the appropriate STEP folders at runtime.
 
-CHARMM36m/ ⚠️ Required
+```
+CHARMM36m/
+```
+⚠️ Required
+
 Must be located at the top level of the repository.
 
 This directory should contain the CHARMM36m force field files referenced by the NAMD configuration files (e.g. parameter and topology files).
 The protocol assumes relative paths to this directory inside the .conf files.
 
+```
 ReVesicle/
 ├── ReVesicle.sh
 ├── script/
 ├── CHARMM36m/
 └── (run directories will be created here)
+```
 
 When running the full protocol (-run_steps all), the following directory tree is created:
 
+```
 STEP-1-3_A/
 ├── STEP-1_A/
 ├── STEP-2_A/
 ├── STEP-3_A/
-
+```
+```
 STEP-1-3_B/
 ├── STEP-1_B/
 ├── STEP-2_B/
 ├── STEP-3_B/
-
+```
+```
 STEP-4/
 STEP-5/
-
+```
 ---
 
 ## Usage
