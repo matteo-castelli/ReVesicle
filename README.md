@@ -144,12 +144,6 @@ These scripts remove water and ions while preserving lipid and protein coordinat
 
 ---
 
-## License
-
-This project is intended for open scientific use. A permissive license (MIT or BSD) is recommended when releasing the public repository.
-
----
-
 ## Citation
 
 If you use ReVesicle in published work, please cite the associated manuscript describing the protocol and validation.
