@@ -127,7 +127,9 @@ Run without arguments to display help:
 ./ReVesicle.sh
 ```
 
-### Basic example
+### Basic examples
+
+**Example 1: Remove infiltrated water, perform all steps**
 
 ```bash
 ./ReVesicle.sh \
@@ -136,8 +138,23 @@ Run without arguments to display help:
   -dcd /full/path/to/trajectory.dcd \
   -xst /full/path/to/system.xst
 ```
+This command runs the complete ReVesicle workflow (STEP-1 through STEP-5).
+The parameters d1 (16) and d2 (46) define two concentric spherical cutoffs relative to the vesicle radius, which are used during STEP-1A, STEP-1B and STEP-4 to identify and remove infiltrated water molecules. Lipid removal is disabled by default, so only water cleanup is performed. Trajectories are stripped of water and ions after the cleanup steps using the default striptraj behavior.
 
-This runs the full ReVesicle protocol (STEP-1 through STEP-5).
+**Example 2: Remove infiltrated water *and* flipped lipids, stop after STEP 4**
+
+```bash
+./ReVesicle.sh \
+  -d1 16 -d2 46 \
+  -remove_lipids on \
+  -d3 18 -d4 52 \
+  -js /full/path/to/system.js \
+  -dcd /full/path/to/trajectory.dcd \
+  -xst /full/path/to/system.xst \
+  -run_steps 1234
+  –striptraj no
+```
+This command runs ReVesicle through STEP 4 only. In addition to removing infiltrated water molecules using the d1 and d2 spherical cutoffs, flipped lipid species are identified and removed using the lipid-specific offsets d3 and d4. This mode is useful for validating membrane cleanup steps and non-equilibrium MD steps before proceeding to STEP-5. Trajectories are not stripped of water and ions as defined by striptraj "no".
 
 ---
 
