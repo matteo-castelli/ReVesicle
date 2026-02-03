@@ -198,13 +198,15 @@ project/
 │       └── STEP-5.xst
 └── iteration_2/
     ├── ReVesicle.sh
-    └── ...
+    ├── Script
+    ├── VMD_functions
+    └── CHARMM36m
 ```
 
 Example:
 
 ```bash
- # Move to the new iteration folder
+ # Move from iteration_1 to the new iteration folder
  cd ../iteration_2/
 
  # Run ReVesicle
