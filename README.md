@@ -174,11 +174,10 @@ values for `d3` and `d4` can be determined using the VMD helper script
 `VMD_functions/check_flipped_lipids.tcl`. 
 Stripped trajectories, where water and ions are removed are not generated, as defined by `-striptraj no`.
 
-`./ReVesicle.sh -d1 16 -d2 52 -js /scratch3/06415/tg857148/VIRION_2/vesicle/7_ReVesicle/STEP-4/STEP-4_empty_holes.js -dcd /scratch3/06415/tg857148/VIRION_2/vesicle/7_ReVesicle/STEP-5/STEP-5.dcd -xst /scratch3/06415/tg857148/VIRION_2/vesicle/STEP-5/STEP-5.xst -remove_lipids off -striptraj yes -run_steps all`
 
 **Example 3: Chaining ReVesicle iterations**
 
-To start a new ReVesicle iteration manually, after the previous one has finished, rerun `ReVesicle.sh` from the new iteration folder using:
+To start a new ReVesicle iteration manually after the previous one has finished, run `ReVesicle.sh` from the new iteration folder using:
 
 - `-js`  from the previous iteration `STEP-4` (`STEP-4_empty_holes.js`)
 - `-dcd` from the previous iteration `STEP-5` trajectory (`STEP-5.dcd`)
@@ -202,7 +201,7 @@ project/
     ├── VMD_functions
     └── CHARMM36m
 ```
-Note: make sure you have cloned the all ReVesicle files and subdirectories in the new iteration folder.
+Note: make sure you have cloned the all ReVesicle files and subdirectories (`ReVesicle.sh`, `Script`, `VMD_functions`, `CHARMM36m`) in the new iteration folder.
 
 Example:
 
