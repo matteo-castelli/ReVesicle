@@ -201,7 +201,7 @@ project/
     ├── VMD_functions
     └── CHARMM36m
 ```
-Note: make sure you have cloned the all the essential ReVesicle files and subdirectories (`ReVesicle.sh`, `Script`, `VMD_functions`, `CHARMM36m`) in the new iteration folder (`iteration_2`).
+Note: make sure you have cloned the all the essential ReVesicle repository files and subdirectories (`ReVesicle.sh`, `Script`, `VMD_functions`, `CHARMM36m`) in the new iteration folder (`iteration_2`).
 
 Example:
 
