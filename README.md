@@ -174,6 +174,8 @@ values for `d3` and `d4` can be determined using the VMD helper script
 `VMD_functions/check_flipped_lipids.tcl`. 
 Stripped trajectories, where water and ions are removed are not generated, as defined by `-striptraj no`.
 
+`./ReVesicle.sh -d1 16 -d2 52 -js /scratch3/06415/tg857148/VIRION_2/vesicle/7_ReVesicle/STEP-4/STEP-4_empty_holes.js -dcd /scratch3/06415/tg857148/VIRION_2/vesicle/7_ReVesicle/STEP-5/STEP-5.dcd -xst /scratch3/06415/tg857148/VIRION_2/vesicle/STEP-5/STEP-5.xst -remove_lipids off -striptraj yes -run_steps all`
+
 ---
 
 ## Notes
