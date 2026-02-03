@@ -215,7 +215,7 @@ Example:
   -d2 46 \
   -js  ../iteration_1/STEP-4/STEP-4_empty_holes.js \
   -dcd ../iteration_1/STEP-5/STEP-5.dcd \
-  -xst ../iteration_1/STEP-5/STEP-5.restart.xsc
+  -xst ../iteration_1/STEP-5/STEP-5.xst
 ```
 
 ---
