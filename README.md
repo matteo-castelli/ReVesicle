@@ -134,7 +134,7 @@ Run without arguments to display help:
 ```bash
 ./ReVesicle.sh \
   -d1 16 -d2 46 \
-  -js /full/path/to/system.js \
+  -js  /full/path/to/system.js \
   -dcd /full/path/to/trajectory.dcd \
   -xst /full/path/to/system.xst
 ```
@@ -155,7 +155,7 @@ default `striptraj` behavior (yes).
   -d1 16 -d2 46 \
   -remove_lipids on \
   -d3 18 -d4 52 \
-  -js /full/path/to/system.js \
+  -js  /full/path/to/system.js \
   -dcd /full/path/to/trajectory.dcd \
   -xst /full/path/to/system.xst \
   -run_steps 1234
@@ -175,6 +175,46 @@ values for `d3` and `d4` can be determined using the VMD helper script
 Stripped trajectories, where water and ions are removed are not generated, as defined by `-striptraj no`.
 
 `./ReVesicle.sh -d1 16 -d2 52 -js /scratch3/06415/tg857148/VIRION_2/vesicle/7_ReVesicle/STEP-4/STEP-4_empty_holes.js -dcd /scratch3/06415/tg857148/VIRION_2/vesicle/7_ReVesicle/STEP-5/STEP-5.dcd -xst /scratch3/06415/tg857148/VIRION_2/vesicle/STEP-5/STEP-5.xst -remove_lipids off -striptraj yes -run_steps all`
+
+**Example 3: Chaining ReVesicle iterations**
+
+To start a new ReVesicle iteration manually, after the previous one has finished, rerun `ReVesicle.sh` from the new iteration folder using:
+
+- `-js` from `STEP-4` (`STEP-4_empty_holes.js`)
+- `-dcd` from the previous iteration `STEP-5` trajectory (`STEP-5.dcd`)
+- `-xst` from the previous iteration cell (`STEP-5.xst`)
+
+Project directory layout:
+
+```
+project/
+├── iteration_1/
+│   ├── ReVesicle.sh
+│   ├── ...
+│   ├── STEP-4/
+│   │   └── STEP-4_empty_holes.js
+│   └── STEP-5/
+│       ├── STEP-5.dcd
+│       └── STEP-5.xst
+└── iteration_2/
+    ├── ReVesicle.sh
+    └── ...
+```
+
+Example:
+
+```bash
+ # Move to the new iteration folder
+ cd ../iteration_2/
+
+ # Run ReVesicle
+ ./ReVesicle.sh \
+  -d1 16 \
+  -d2 46 \
+  -js  ../iteration_1/STEP-4/STEP-4_empty_holes.js \
+  -dcd ../iteration_1/STEP-5/STEP-5.dcd \
+  -xst ../iteration_1/STEP-5/STEP-5.restart.xsc
+```
 
 ---
 
