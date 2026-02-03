@@ -205,7 +205,7 @@ for conf in "${CONF_BASENAME_CHECK[@]}"; do
       exit 1
     fi
   else
-    echo "WARNING: ${conf} not found yet (will be checked later)" >&2
+    echo "Checking basename: ${conf} will be copied to destination directory" >&2
   fi
 done
 
