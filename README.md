@@ -180,11 +180,11 @@ Stripped trajectories, where water and ions are removed are not generated, as de
 
 To start a new ReVesicle iteration manually, after the previous one has finished, rerun `ReVesicle.sh` from the new iteration folder using:
 
-- `-js` from `STEP-4` (`STEP-4_empty_holes.js`)
+- `-js`  from the previous iteration `STEP-4` (`STEP-4_empty_holes.js`)
 - `-dcd` from the previous iteration `STEP-5` trajectory (`STEP-5.dcd`)
-- `-xst` from the previous iteration cell (`STEP-5.xst`)
+- `-xst` from the previous iteration `STEP-5` cell (`STEP-5.xst`)
 
-Project directory layout:
+Project's main directory layout:
 
 ```
 project/
@@ -202,6 +202,7 @@ project/
     ├── VMD_functions
     └── CHARMM36m
 ```
+Note: make sure you have cloned the all ReVesicle files and subdirectories in the new iteration folder.
 
 Example:
 
