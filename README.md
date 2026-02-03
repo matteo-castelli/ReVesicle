@@ -81,7 +81,7 @@ These files are copied automatically into the appropriate STEP folders at runtim
 ```
 CHARMM36m/
 ```
-Must be located at the top level of the repository. ⚠️ Required
+⚠️ Required. Must be located at the top level of the repository. 
 This directory should contain the CHARMM36m force field files referenced by the NAMD configuration files (e.g. parameter and topology files).
 The protocol assumes relative paths to this directory inside the .conf files.
 
