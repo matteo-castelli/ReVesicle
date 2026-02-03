@@ -138,8 +138,15 @@ Run without arguments to display help:
   -dcd /full/path/to/trajectory.dcd \
   -xst /full/path/to/system.xst
 ```
-This command runs the complete ReVesicle workflow (STEP-1 through STEP-5).
-The parameters d1 (16) and d2 (46) define two concentric spherical cutoffs relative to the vesicle radius, which are used during STEP-1A, STEP-1B and STEP-4 to identify and remove infiltrated water molecules. Lipid removal is disabled by default, so only water cleanup is performed. Trajectories are stripped of water and ions after the cleanup steps using the default striptraj behavior.
+This command runs the complete ReVesicle workflow by default, executing STEP 1
+through STEP 5. The parameters `d1` (16) and `d2` (46) define two concentric
+spherical cutoffs relative to the vesicle radius, which are used during
+STEP 1A, STEP 1B, and STEP 4 to identify and remove infiltrated water molecules.
+Values for `d1` and `d2` can be determined interactively using the VMD helper
+function provided in `VMD_functions/two_concentric_sphere_selection_function.tcl`.
+Lipid removal is disabled by default, so only water cleanup is performed.
+Trajectories are stripped of water and ions as defined by the
+default `striptraj` behavior (yes).
 
 **Example 2: Remove infiltrated water *and* flipped lipids, stop after STEP 4**
 
@@ -154,7 +161,18 @@ The parameters d1 (16) and d2 (46) define two concentric spherical cutoffs relat
   -run_steps 1234
   –striptraj no
 ```
-This command runs ReVesicle through STEP 4 only. In addition to removing infiltrated water molecules using the d1 and d2 spherical cutoffs, flipped lipid species are identified and removed using the lipid-specific offsets d3 and d4. This mode is useful for validating membrane cleanup steps and non-equilibrium MD steps before proceeding to STEP-5. Trajectories are not stripped of water and ions as defined by striptraj "no".
+This command runs the ReVesicle workflow through STEP 4 only, as specified by
+`-run_steps 1234`. This mode is useful for validating membrane cleanup and
+non-equilibrium MD steps prior to proceeding to STEP 5.
+In addition to removing infiltrated water molecules using the
+`d1` and `d2` spherical cutoffs, flipped lipid species are identified when
+`-remove_lipids on` is enabled and removed using the lipid-specific offsets
+`d3` and `d4`. Values for `d1` and `d2` can be determined interactively using the
+VMD helper function provided in
+`VMD_functions/two_concentric_sphere_selection_function.tcl`, while appropriate
+values for `d3` and `d4` can be determined using the VMD helper script
+`VMD_functions/check_flipped_lipids.tcl`. 
+Stripped trajectories, where water and ions are removed are not generated, as defined by `-striptraj no`.
 
 ---
 
