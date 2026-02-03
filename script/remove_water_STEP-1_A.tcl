@@ -117,7 +117,7 @@ puts "    radius (avg/2) = $radius"
 set TOT_sel "(resname TIP3 and same residue as (((x-$membrane_com_x)*(x-$membrane_com_x) + (y-$membrane_com_y)*(y-$membrane_com_y) + (z-$membrane_com_z)*(z-$membrane_com_z)) < (($radius-$d1)*($radius-$d1)) and ((x-$membrane_com_x)*(x-$membrane_com_x) + (y-$membrane_com_y)*(y-$membrane_com_y) + (z-$membrane_com_z)*(z-$membrane_com_z)) > (($radius-$d2)*($radius-$d2))))"
 
 set TOT_water [atomselect top $TOT_sel frame last]
-set TOT_water_index   [lsort -unique -real [$TOT_water get residue]]
+set TOT_water_index   [lsort -unique -real [$TOT_water get index]]
 set TOT_water_index_l [llength $TOT_water_index]
 
 $TOT_water writejs TOT_removed_water.js
