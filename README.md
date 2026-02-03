@@ -177,7 +177,7 @@ Stripped trajectories, where water and ions are removed are not generated, as de
 
 **Example 3: Chaining ReVesicle iterations**
 
-To start a new ReVesicle iteration manually after the previous one has finished, run `ReVesicle.sh` from the new iteration folder using:
+To start a new ReVesicle iteration manually after the previous one (`iteration_1`) has finished, run `ReVesicle.sh` from the new iteration folder (`iteration_2`) using:
 
 - `-js`  from the previous iteration `STEP-4` (`STEP-4_empty_holes.js`)
 - `-dcd` from the previous iteration `STEP-5` trajectory (`STEP-5.dcd`)
@@ -201,7 +201,7 @@ project/
     ├── VMD_functions
     └── CHARMM36m
 ```
-Note: make sure you have cloned the all ReVesicle files and subdirectories (`ReVesicle.sh`, `Script`, `VMD_functions`, `CHARMM36m`) in the new iteration folder.
+Note: make sure you have cloned the all the essential ReVesicle files and subdirectories (`ReVesicle.sh`, `Script`, `VMD_functions`, `CHARMM36m`) in the new iteration folder (`iteration_2`).
 
 Example:
 
