@@ -218,7 +218,7 @@ Example:
   -xst ../iteration_1/STEP-5/STEP-5.xst
 ```
 
-**Example 4: Perform STEP-5 only and complete the same ReVesicle iteration**
+**Example 4: Perform STEP-5 only**
 
 If a ReVesicle iteration completed through STEP-4 but did not execute STEP-5 (e.g., walltime limit), you can continue the same iteration without creating a new directory.
 
