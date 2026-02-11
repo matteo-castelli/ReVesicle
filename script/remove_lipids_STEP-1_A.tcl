@@ -41,7 +41,7 @@ puts "    d3 (inner) = $d3 Å"
 puts "    d4 (outer) = $d4 Å"
 
 ###############################################################################
-# DEFINE VMD MACROS
+# DEFINE VMD MACROS: if any residue is missing, add it to the lists
 ###############################################################################
 
 atomselect macro glycan {resname NAG BGLN BGLCNA FUC AFUC BFUC AGAL BGAL MAN AMAN BMA BMAN BCNA ANE5 ANE5AC BNE5AC AGAN AGALNA AGALNAC BGLC BGAN AGAN}
