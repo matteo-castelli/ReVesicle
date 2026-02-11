@@ -55,8 +55,8 @@ atomselect macro lipid {resname DLPE DMPC DPPC GPC LPPC PALM PC PGCL POPC POPE P
 #   STEP-1_A_empty_holes.{js,coor}
 ###############################################################################
 
-mol new ../STEP-1_A/STEP-1_A_empty_holes.js waitfor all
-mol addfile ../STEP-1_A/STEP-1_A_empty_holes.coor waitfor all
+mol new STEP-1_A_empty_holes.js waitfor all
+mol addfile STEP-1_A_empty_holes.coor waitfor all
 
 ###############################################################################
 # CLEANUP OLD OUTPUT FILE
