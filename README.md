@@ -247,10 +247,7 @@ production stage. This continues directly into STEP-5 and does not regenerate ST
 
 The `-js`, `-dcd`, and `-xst` flags provide the equilibrated vesicle structure
 from STEP-4 and the corresponding trajectory and unit cell dimensions from
-STEP-3_B. These inputs allow ReVesicle to proceed directly into STEP-5 without
-regenerating STEPS 1–4.
-
-The spherical cutoffs `-d1` and `-d2`, although not used in STEP-5, are still required.
+STEP-3_B. The spherical cutoffs `-d1` and `-d2`, although not used in STEP-5, are still required.
 
 ---
 
