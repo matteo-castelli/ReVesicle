@@ -218,6 +218,40 @@ Example:
   -xst ../iteration_1/STEP-5/STEP-5.xst
 ```
 
+**Example 4: Perform STEP-5 only and complete the same ReVesicle iteration**
+
+If a ReVesicle iteration completed through STEP-4 but did not execute STEP-5 (e.g., walltime limit), you can continue the same iteration without creating a new directory.
+
+Required files:
+
+- `-js`  from `STEP-4` (`STEP-4_empty_holes.js`)
+- `-dcd` from `STEP-3_B` trajectory (`STEP-3_B.dcd`)
+- `-xst` from `STEP-3_B` cell (`STEP-3_B.xst`)
+
+Run ReVesicle from inside the current iteration directory:
+
+```bash
+./ReVesicle.sh \
+  -d1 16 \
+  -d2 46 \
+  -js  STEP-4/STEP-4_empty_holes.js \
+  -dcd STEP-1-3_B/STEP-3_B/STEP-3.dcd \
+  -xst STEP-1-3_B/STEP-3_B/STEP-3.xst \
+  -run_steps 5
+```
+
+This command runs the ReVesicle workflow through STEP-5 only, as specified by
+`-run_steps 5`. This mode is useful for completing a previously interrupted
+iteration that successfully finished STEP-4 but did not execute the final
+production stage. This continues directly into STEP-5 and does not regenerate STEPS 1–4.
+
+The `-js`, `-dcd`, and `-xst` flags provide the equilibrated vesicle structure
+from STEP-4 and the corresponding trajectory and unit cell dimensions from
+STEP-3_B. These inputs allow ReVesicle to proceed directly into STEP-5 without
+regenerating STEPS 1–4.
+
+The spherical cutoffs `-d1` and `-d2`, although not used in STEP-5, are still required.
+
 ---
 
 ## Notes
