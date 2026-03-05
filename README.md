@@ -1,7 +1,5 @@
-
 <img width="975[TOC_ReVesicle.001.pdf](https://github.com/user-attachments/files/25776383/TOC_ReVesicle.001.pdf)
 " height="525" alt="TOC" src="https://github.com/user-attachments/assets/9d4a59bc-7919-423b-9ddf-67ebc2fee7ad" />
-
 # ReVesicle
 
 ReVesicle is an automated, iterative equilibration protocol for large-scale, quasi-spherical lipid vesicles at the all-atom (AA) level. It is designed to robustly restore bilayer continuity and density in vesicles generated from wrapped planar membranes, which often contain holes, infiltrated water molecules, and flipped lipids.
