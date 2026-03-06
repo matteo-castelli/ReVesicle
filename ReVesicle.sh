@@ -44,6 +44,7 @@ Optional arguments:
   -run_steps all|1234|5
                      all   : run full workflow (default)
                      1234  : stop after STEP-4
+                     1b5   : run from STEP-1B to STEP-5
                      5     : run STEP-5 only
 
   -h, --help         Show this help message and exit
@@ -152,10 +153,11 @@ else
   echo "==> Lipid removal disabled"
 fi
 
-if [[ "${RUN_MODE}" != "all" && "${RUN_MODE}" != "1234" && "${RUN_MODE}" != "5" ]]; then
-  echo "ERROR: -run must be one of: all | 1234 | 5 (got: ${RUN_MODE})" >&2
+if [[ "${RUN_MODE}" != "all" && "${RUN_MODE}" != "1234" && "${RUN_MODE}" != "5" && "${RUN_MODE}" != "1b5" ]]; then
+  echo "ERROR: -run must be one of: all | 1234 | 5 | 1b5 (got: ${RUN_MODE})" >&2
   exit 1
 fi
+
 
 echo "==> Run mode selected: ${RUN_MODE}"
 
@@ -164,15 +166,57 @@ echo "==> Run mode selected: ${RUN_MODE}"
 # This controls which .js/.coor downstream scripts will read
 # ---------------------------------------------------------------------------
 
-if [[ "${REMOVE_LIPIDS}" == "on" ]]; then
-  STEP1A_SYSTEM_BASENAME="STEP-1_A_empty_holes_lipids_charge"
+# Root directory where the workflow folders will be created.
+# Default: current directory.
+WORKDIR="${WORKDIR:-$(pwd)}"
+
+# NEW: In restart mode (1b5), infer topology from existing STEP-1_A outputs
+if [[ "${RUN_MODE}" == "1b5" ]]; then
+
+  STEP1A_DIR="${WORKDIR}/STEP-1-3_A/STEP-1_A"
+
+  if [[ -f "${STEP1A_DIR}/STEP-1_A_empty_holes_lipids_charge.js" ]]; then
+    STEP1A_SYSTEM_BASENAME="STEP-1_A_empty_holes_lipids_charge"
+
+    if [[ "${REMOVE_LIPIDS}" != "on" ]]; then
+      echo "WARNING: Detected lipid-removed STEP-1_A output:"
+      echo "         STEP-1_A_empty_holes_lipids_charge.js"
+      echo "         Overriding CLI settings to match existing topology."
+    fi
+
+    REMOVE_LIPIDS="on"
+
+  elif [[ -f "${STEP1A_DIR}/STEP-1_A_empty_holes.js" ]]; then
+    STEP1A_SYSTEM_BASENAME="STEP-1_A_empty_holes"
+
+    if [[ "${REMOVE_LIPIDS}" == "on" ]]; then
+      echo "WARNING: -remove_lipids on was requested, but no lipid-removed"
+      echo "         STEP-1_A output was found. Using non-lipid-removed topology."
+    fi
+
+    REMOVE_LIPIDS="off"
+
+  else
+    echo "ERROR: Restart mode (b12345) requires existing STEP-1_A outputs."
+    echo "       Expected one of:"
+    echo "         STEP-1_A_empty_holes.js"
+    echo "         STEP-1_A_empty_holes_lipids_charge.js"
+    exit 1
+  fi
+
 else
-  STEP1A_SYSTEM_BASENAME="STEP-1_A_empty_holes"
+  # Original behavior: use CLI flag
+  if [[ "${REMOVE_LIPIDS}" == "on" ]]; then
+    STEP1A_SYSTEM_BASENAME="STEP-1_A_empty_holes_lipids_charge"
+  else
+    STEP1A_SYSTEM_BASENAME="STEP-1_A_empty_holes"
+  fi
 fi
 
 export REVESICLE_STEP1A_BASENAME="${STEP1A_SYSTEM_BASENAME}"
 
 echo "==> STEP-1_A system basename set to: ${REVESICLE_STEP1A_BASENAME}"
+
 ###############################################################################
 # Sanity checks for STEP-1_A basename propagation
 ###############################################################################
@@ -198,14 +242,14 @@ CONF_BASENAME_CHECK=(
 for conf in "${CONF_BASENAME_CHECK[@]}"; do
   if [[ -f "${conf}" ]]; then
     if grep -q "REVESICLE_STEP1A_BASENAME" "${conf}"; then
-      echo "    OK: ${conf} uses REVESICLE_STEP1A_BASENAME"
+      echo "    OK: ${conf} uses ${REVESICLE_STEP1A_BASENAME} basename"
     else
       echo "ERROR: ${conf} does NOT reference REVESICLE_STEP1A_BASENAME" >&2
       echo "       This likely means a hard-coded STEP-1_A_empty_holes*.js remains." >&2
       exit 1
     fi
   else
-    echo "Checking basename: ${conf} will be copied to destination directory" >&2
+    echo "    Checking basename: ${conf} will be copied to destination directory"
   fi
 done
 
@@ -423,8 +467,10 @@ run_namd_compress() {
 echo "==> Creating ReVesicle folder structure in: ${WORKDIR}"
 cd "${WORKDIR}"
 
-# Top-level folders
-if [[ "${RUN_MODE}" != "5" ]]; then
+# ------------------------------------------------------------------
+# Base structure (created for all modes except pure 5)
+# ------------------------------------------------------------------
+if [[ "${RUN_MODE}" != "5" && "${RUN_MODE}" != "1b5" ]]; then
   mkdir -p \
     "STEP-1-3_A/STEP-1_A" \
     "STEP-1-3_A/STEP-2_A" \
@@ -435,9 +481,29 @@ if [[ "${RUN_MODE}" != "5" ]]; then
     "STEP-4"
 fi
 
-# STEP-5 directory is needed for mode "all" and "5"
-if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" ]]; then
+# ------------------------------------------------------------------
+# STEP-5 needed for: all, 5, and 1b5
+# ------------------------------------------------------------------
+if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" || "${RUN_MODE}" == "1b5" ]]; then
   mkdir -p "STEP-5"
+fi
+
+# ------------------------------------------------------------------
+# Ensure required folders exist for 1b5 (create if missing)
+# ------------------------------------------------------------------
+if [[ "${RUN_MODE}" == "1b5" ]]; then
+  for dir in \
+    "STEP-1-3_B/STEP-1_B" \
+    "STEP-1-3_B/STEP-2_B" \
+    "STEP-1-3_B/STEP-3_B" \
+    "STEP-4" \
+    "STEP-5"
+  do
+    if [[ ! -d "${dir}" ]]; then
+      echo "INFO: Creating missing directory ${dir}"
+      mkdir -p "${dir}"
+    fi
+  done
 fi
 
 echo "==> Folder structure created."
@@ -448,48 +514,15 @@ echo "==> Folder structure created."
 SCRIPTS_DIR="${WORKDIR}/script"
 [[ -d "${SCRIPTS_DIR}" ]] || die "Missing required folder: ${SCRIPTS_DIR}"
 
-if [[ "${RUN_MODE}" != "5" ]]; then
- # Copy (overwrite) each required input file into its corresponding step folder.
- # This ensures each step directory is self-contained and runnable.
- cp -f "${SCRIPTS_DIR}/remove_water_STEP-1_A.tcl"                   "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
- cp -f "${SCRIPTS_DIR}/print_index_water_lipids_heads_STEP-1_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
- cp -f "${SCRIPTS_DIR}/print_index_water_STEP-1_A.tcl"              "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
- cp -f "${SCRIPTS_DIR}/compress_STEP-1_A.conf"                      "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
-
- cp -f "${SCRIPTS_DIR}/STEP-2_A.conf"                               "${WORKDIR}/STEP-1-3_A/STEP-2_A/"
- cp -f "${SCRIPTS_DIR}/STEP-3_A.conf"                               "${WORKDIR}/STEP-1-3_A/STEP-3_A/"
-
- cp -f "${SCRIPTS_DIR}/remove_water_STEP-1_B.tcl"                   "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
- cp -f "${SCRIPTS_DIR}/print_index_water_lipids_heads_STEP-1_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
- cp -f "${SCRIPTS_DIR}/print_index_water_STEP-1_B.tcl"              "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
- cp -f "${SCRIPTS_DIR}/compress_STEP-1_B.conf"                      "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
-
- cp -f "${SCRIPTS_DIR}/STEP-2_B.conf"                               "${WORKDIR}/STEP-1-3_B/STEP-2_B/"
- cp -f "${SCRIPTS_DIR}/STEP-3_B.conf"                               "${WORKDIR}/STEP-1-3_B/STEP-3_B/"
-
- # Optional: stage trajectory stripping Tcl scripts
- if [[ "${STRIPTRAJ}" == "yes" ]]; then
-   cp -f "${SCRIPTS_DIR}/striptraj_STEP-2_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-2_A/"
-   cp -f "${SCRIPTS_DIR}/striptraj_STEP-3_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-3_A/"
-   cp -f "${SCRIPTS_DIR}/striptraj_STEP-2_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-2_B/"
-   cp -f "${SCRIPTS_DIR}/striptraj_STEP-3_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-3_B/"
- fi
-
- cp -f "${SCRIPTS_DIR}/remove_water_STEP-4.tcl"                     "${WORKDIR}/STEP-4/"
- cp -f "${SCRIPTS_DIR}/print_index_lipids_heads_STEP-4.tcl"         "${WORKDIR}/STEP-4/"
- cp -f "${SCRIPTS_DIR}/compress_STEP-4.conf"                        "${WORKDIR}/STEP-4/"
-
-fi
-
-if [[ "${RUN_MODE}" != "5" && "${REMOVE_LIPIDS}" == "on" ]]; then
+if [[ "${RUN_MODE}" != "5" && "${RUN_MODE}" != "1b5" && "${REMOVE_LIPIDS}" == "on" ]]; then
   cp -f "${SCRIPTS_DIR}/remove_lipids_STEP-1_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
   cp -f "${SCRIPTS_DIR}/remove_cla_STEP-1_A.tcl"    "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
 fi
 
-if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" ]]; then
+if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" || "${RUN_MODE}" == "1b5" ]]; then
   cp -f "${SCRIPTS_DIR}/STEP-5.conf"      "${WORKDIR}/STEP-5/"
   
-  if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" ]]; then
+  if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" || "${RUN_MODE}" == "1b5" ]]; then
     cp -f "${SCRIPTS_DIR}/get_cell_size.sh" "${WORKDIR}/STEP-5/"
     chmod +x "${WORKDIR}/STEP-5/get_cell_size.sh"
   fi
@@ -501,6 +534,87 @@ fi
 
 echo "==> Input files copied from ${SCRIPTS_DIR} into step folders."
 
+if [[ "${RUN_MODE}" == "1b5" ]]; then
+
+  # Only STEP-1-3_B
+  cp -f "${SCRIPTS_DIR}/remove_water_STEP-1_B.tcl"                   "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+  cp -f "${SCRIPTS_DIR}/print_index_water_lipids_heads_STEP-1_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+  cp -f "${SCRIPTS_DIR}/print_index_water_STEP-1_B.tcl"              "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+  cp -f "${SCRIPTS_DIR}/compress_STEP-1_B.conf"                      "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+
+  cp -f "${SCRIPTS_DIR}/STEP-2_B.conf" "${WORKDIR}/STEP-1-3_B/STEP-2_B/"
+  cp -f "${SCRIPTS_DIR}/STEP-3_B.conf" "${WORKDIR}/STEP-1-3_B/STEP-3_B/"
+
+  if [[ "${STRIPTRAJ}" == "yes" ]]; then
+    cp -f "${SCRIPTS_DIR}/striptraj_STEP-2_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-2_B/"
+    cp -f "${SCRIPTS_DIR}/striptraj_STEP-3_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-3_B/"
+  fi
+
+  # STEP-4
+  cp -f "${SCRIPTS_DIR}/remove_water_STEP-4.tcl"             "${WORKDIR}/STEP-4/"
+  cp -f "${SCRIPTS_DIR}/print_index_lipids_heads_STEP-4.tcl" "${WORKDIR}/STEP-4/"
+  cp -f "${SCRIPTS_DIR}/compress_STEP-4.conf"                "${WORKDIR}/STEP-4/"
+
+
+elif [[ "${RUN_MODE}" != "5" ]]; then
+
+  # Default behavior: copy everything
+
+  # STEP-1_A
+  cp -f "${SCRIPTS_DIR}/remove_water_STEP-1_A.tcl"                   "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
+  cp -f "${SCRIPTS_DIR}/print_index_water_lipids_heads_STEP-1_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
+  cp -f "${SCRIPTS_DIR}/print_index_water_STEP-1_A.tcl"              "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
+  cp -f "${SCRIPTS_DIR}/compress_STEP-1_A.conf"                      "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
+
+  cp -f "${SCRIPTS_DIR}/STEP-2_A.conf" "${WORKDIR}/STEP-1-3_A/STEP-2_A/"
+  cp -f "${SCRIPTS_DIR}/STEP-3_A.conf" "${WORKDIR}/STEP-1-3_A/STEP-3_A/"
+
+  # STEP-1_B
+  cp -f "${SCRIPTS_DIR}/remove_water_STEP-1_B.tcl"                   "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+  cp -f "${SCRIPTS_DIR}/print_index_water_lipids_heads_STEP-1_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+  cp -f "${SCRIPTS_DIR}/print_index_water_STEP-1_B.tcl"              "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+  cp -f "${SCRIPTS_DIR}/compress_STEP-1_B.conf"                      "${WORKDIR}/STEP-1-3_B/STEP-1_B/"
+
+  cp -f "${SCRIPTS_DIR}/STEP-2_B.conf" "${WORKDIR}/STEP-1-3_B/STEP-2_B/"
+  cp -f "${SCRIPTS_DIR}/STEP-3_B.conf" "${WORKDIR}/STEP-1-3_B/STEP-3_B/"
+
+  if [[ "${STRIPTRAJ}" == "yes" ]]; then
+    cp -f "${SCRIPTS_DIR}/striptraj_STEP-2_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-2_A/"
+    cp -f "${SCRIPTS_DIR}/striptraj_STEP-3_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-3_A/"
+    cp -f "${SCRIPTS_DIR}/striptraj_STEP-2_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-2_B/"
+    cp -f "${SCRIPTS_DIR}/striptraj_STEP-3_B.tcl" "${WORKDIR}/STEP-1-3_B/STEP-3_B/"
+  fi
+
+  # STEP-4
+  cp -f "${SCRIPTS_DIR}/remove_water_STEP-4.tcl"             "${WORKDIR}/STEP-4/"
+  cp -f "${SCRIPTS_DIR}/print_index_lipids_heads_STEP-4.tcl" "${WORKDIR}/STEP-4/"
+  cp -f "${SCRIPTS_DIR}/compress_STEP-4.conf"                "${WORKDIR}/STEP-4/"
+
+fi
+
+# REMOVE LIPIDS and CLA
+if [[ "${RUN_MODE}" != "5" && "${RUN_MODE}" != "1b5" && "${REMOVE_LIPIDS}" == "on" ]]; then
+  cp -f "${SCRIPTS_DIR}/remove_lipids_STEP-1_A.tcl" "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
+  cp -f "${SCRIPTS_DIR}/remove_cla_STEP-1_A.tcl"    "${WORKDIR}/STEP-1-3_A/STEP-1_A/"
+fi
+
+# STEP-5
+if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" || "${RUN_MODE}" == "1b5" ]]; then
+  cp -f "${SCRIPTS_DIR}/STEP-5.conf"      "${WORKDIR}/STEP-5/"
+  
+  if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" || "${RUN_MODE}" == "1b5" ]]; then
+    cp -f "${SCRIPTS_DIR}/get_cell_size.sh" "${WORKDIR}/STEP-5/"
+    chmod +x "${WORKDIR}/STEP-5/get_cell_size.sh"
+  fi
+
+  if [[ "${STRIPTRAJ}" == "yes" ]]; then
+    cp -f "${SCRIPTS_DIR}/striptraj_STEP-5.tcl" "${WORKDIR}/STEP-5/"
+  fi
+fi
+
+echo "==> Input files copied from ${SCRIPTS_DIR} into step folders."
+
+
 ###############################################################################
 # NEW: Update PBC in selected .conf files from the provided .xst
 ###############################################################################
@@ -511,9 +625,32 @@ CELL_HELPER="${SCRIPTS_DIR}/get_cell_size.sh"
 chmod +x "${CELL_HELPER}"
 [[ -x "${CELL_HELPER}" ]] || die "Missing or non-executable helper: ${CELL_HELPER}"
 
-CONF_FILES_TO_UPDATE=()
+# ------------------------------------------------------------
+# Mode 1b5 → Only B branch + STEP-4 + STEP-5
+# ------------------------------------------------------------
+if [[ "${RUN_MODE}" == "1b5" ]]; then
 
-if [[ "${RUN_MODE}" != "5" ]]; then
+  CONF_FILES_TO_UPDATE+=(
+    "${WORKDIR}/STEP-1-3_B/STEP-1_B/compress_STEP-1_B.conf"
+    "${WORKDIR}/STEP-1-3_B/STEP-2_B/STEP-2_B.conf"
+    "${WORKDIR}/STEP-4/compress_STEP-4.conf"
+    "${WORKDIR}/STEP-5/STEP-5.conf"
+  )
+
+# ------------------------------------------------------------
+# Mode 5 → Only STEP-5
+# ------------------------------------------------------------
+elif [[ "${RUN_MODE}" == "5" ]]; then
+
+  CONF_FILES_TO_UPDATE+=(
+    "${WORKDIR}/STEP-5/STEP-5.conf"
+  )
+
+# ------------------------------------------------------------
+# All other modes
+# ------------------------------------------------------------
+else
+
   CONF_FILES_TO_UPDATE+=(
     "${WORKDIR}/STEP-1-3_A/STEP-1_A/compress_STEP-1_A.conf"
     "${WORKDIR}/STEP-1-3_B/STEP-1_B/compress_STEP-1_B.conf"
@@ -521,10 +658,11 @@ if [[ "${RUN_MODE}" != "5" ]]; then
     "${WORKDIR}/STEP-1-3_A/STEP-2_A/STEP-2_A.conf"
     "${WORKDIR}/STEP-1-3_B/STEP-2_B/STEP-2_B.conf"
   )
-fi
 
-if [[ "${RUN_MODE}" == "all" || "${RUN_MODE}" == "5" ]]; then
-  CONF_FILES_TO_UPDATE+=( "${WORKDIR}/STEP-5/STEP-5.conf" )
+  if [[ "${RUN_MODE}" == "all" ]]; then
+    CONF_FILES_TO_UPDATE+=( "${WORKDIR}/STEP-5/STEP-5.conf" )
+  fi
+
 fi
 
 for conf in "${CONF_FILES_TO_UPDATE[@]}"; do
@@ -533,7 +671,41 @@ for conf in "${CONF_FILES_TO_UPDATE[@]}"; do
   "${CELL_HELPER}" "${INPUT_XST}" "${conf}"
 done
 
-echo "==> Cell dimensions updated in all target .conf files."
+###############################################################################
+# Execution: STEP-1B → STEP-5
+###############################################################################
+
+if [[ "${RUN_MODE}" == "1b5" ]]; then
+  echo "==> Run mode 1b5 selected: running STEP-1_B, STEP-2_B, STEP-3_B, STEP-4, STEP-5"
+
+  echo "==> Running STEP-1_B"
+  cd "${WORKDIR}/STEP-1-3_B/STEP-1_B"
+  run_vmd_tcl "remove_water_STEP-1_B.tcl" "remove_water_STEP-1_B.log"
+  run_vmd_tcl "print_index_water_lipids_heads_STEP-1_B.tcl" "print_index_water_lipids_heads_STEP-1_B.log"
+  run_vmd_tcl "print_index_water_STEP-1_B.tcl" "print_index_water_STEP-1_B.log"
+  run_namd_compress "compress_STEP-1_B.conf" "compress_STEP-1_B.log"
+
+  echo "==> Running STEP-2_B"
+  cd "${WORKDIR}/STEP-1-3_B/STEP-2_B"
+  run_namd_conf "STEP-2_B.conf" "STEP-2_B.log"
+
+  echo "==> Running STEP-3_B"
+  cd "${WORKDIR}/STEP-1-3_B/STEP-3_B"
+  run_namd_conf "STEP-3_B.conf" "STEP-3_B.log"
+
+  echo "==> Running STEP-4"
+  cd "${WORKDIR}/STEP-4"
+  run_vmd_tcl "remove_water_STEP-4.tcl" "remove_water_STEP-4.log"
+  run_vmd_tcl "print_index_lipids_heads_STEP-4.tcl" "print_index_lipids_heads_STEP-4.log"
+  run_namd_compress "compress_STEP-4.conf" "compress_STEP-4.log"
+
+  echo "==> Running STEP-5"
+  cd "${WORKDIR}/STEP-5"
+  run_namd_conf "STEP-5.conf" "STEP-5.conf.log"
+
+  echo "==> ReVesicle workflow complete (run mode: 1b5)."
+  exit 0
+fi
 
 ###############################################################################
 # Execution: STEP-1 → STEP-4
