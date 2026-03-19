@@ -4,9 +4,10 @@
 
 ReVesicle is an automated, iterative equilibration protocol for large-scale, quasi-spherical lipid vesicles at the all-atom (AA) level. It is designed to robustly restore bilayer continuity and density in vesicles generated from wrapped planar membranes, which often contain holes, infiltrated water molecules, and flipped lipids.
 
-The protocol combines selective removal of infiltrated species, short non-equilibrium MD cycles, and anisotropic pressure equilibration. All steps are orchestrated by a single driver script (`ReVesicle.sh`) that stages inputs, enforces consistent file naming, updates periodic boundary conditions, and executes VMD and NAMD in the correct order.
+The protocol combines selective removal of infiltrated species, short non-equilibrium MD cycles, and anisotropic pressure equilibration. All steps are orchestrated by a single driver script (`ReVesicle.sh`) that stages inputs, enforces consistent file naming, updates periodic boundary conditions, and executes VMD and NAMD in the correct order. 
 
 If you use ReVesicle in published work, please cite the associated manuscript: https://pubs.acs.org/doi/10.1021/acs.jctc.6c00219
+
 ---
 
 ## Requirements
